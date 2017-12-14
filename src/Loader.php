@@ -325,6 +325,8 @@ class Loader
     public function getEnvironmentVariable($name)
     {
         switch (true) {
+            case defined($name):
+                return constant($name);
             case array_key_exists($name, $_ENV):
                 return $_ENV[$name];
             case array_key_exists($name, $_SERVER):
@@ -359,6 +361,9 @@ class Loader
         if ($this->immutable && $this->getEnvironmentVariable($name) !== null) {
             return;
         }
+        
+        if (!defined($name))
+            define($name, $value);
 
         // If PHP is running as an Apache module and an existing
         // Apache environment variable exists, overwrite it
@@ -369,7 +374,7 @@ class Loader
         if (function_exists('putenv')) {
             putenv("$name=$value");
         }
-
+        
         $_ENV[$name] = $value;
         $_SERVER[$name] = $value;
     }
